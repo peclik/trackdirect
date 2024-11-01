@@ -523,6 +523,58 @@ var trackdirect = {
   },
 
   /**
+   * Toggle station coverage
+   * @param {int} stationId
+   * @param {string} allTransmitLineLinkElementClass
+   */
+  toggleAllTransmitLinesLink: function (stationId, allTransmitLineLinkElementClass) {
+    const map = this._map;
+    const show = !map.markerCollection.hasPermanentTransmitLines(stationId);
+    var anyMatch = false;
+
+    const lastMarker = map.markerCollection.getStationLatestMarker(stationId);
+
+    if (lastMarker && lastMarker.packet.is_moving) {
+      // moving station: activate markers belonging to this station
+      for (const mId in map.markerCollection.getStationMarkerIdKeys(stationId)) {
+        const m = map.markerCollection.getMarker(mId);
+        if (m !== null) {
+          m.toggleTransmitLine(show, true);
+          anyMatch = true;
+        }
+        for (const dm of map.markerCollection.getDotMarkers(mId)) {
+          dm.toggleTransmitLine(show, true);
+          anyMatch = true;
+        }
+      }
+    } else {
+      // stationary station: activate markers whose packets has been received by the station
+      for (const m of map.markerCollection.getAllMarkers()) {
+        if (m.packet.station_id_path.includes(stationId)) {
+          m.toggleTransmitLine(show, true);
+          anyMatch = true;
+        }
+        for (const dm of map.markerCollection.getDotMarkers(m.markerIdKey)) {
+          if (dm.packet.station_id_path.includes(stationId)) {
+            dm.toggleTransmitLine(show, true);
+            anyMatch = true;
+          }
+        }
+      }
+    }
+
+    map.markerCollection.setPermanentTransmitLines(stationId, anyMatch && show);
+
+    allTransmitLineLinkElementClass =
+      typeof allTransmitLineLinkElementClass !== "undefined"
+        ? allTransmitLineLinkElementClass
+        : null;
+    if (allTransmitLineLinkElementClass !== null) {
+      $("." + allTransmitLineLinkElementClass).html((anyMatch && show) ? "Hide Tx-Lines" : "All Tx-Lines");
+    }
+  },
+
+  /**
    * Set map type
    * @param {string} mapType
    * @return None
@@ -989,15 +1041,15 @@ var trackdirect = {
     this.settings = {
       animate: true,
 
-      defaultMinZoomForMarkerLabel: 11,
-      defaultMinZoomForMarkerPrevPosition: 11,
-      defaultMinZoomForMarkerTail: 9,
-      defaultMinZoomForMarkers: 8,
+      defaultMinZoomForMarkerLabel: 10,
+      defaultMinZoomForMarkerPrevPosition: 10,
+      defaultMinZoomForMarkerTail: 8,
+      defaultMinZoomForMarkers: 7,
 
-      minZoomForMarkerLabel: 11,
-      minZoomForMarkerPrevPosition: 11,
-      minZoomForMarkerTail: 9,
-      minZoomForMarkers: 8,
+      minZoomForMarkerLabel: 10,
+      minZoomForMarkerPrevPosition: 10,
+      minZoomForMarkerTail: 8,
+      minZoomForMarkers: 7,
 
       markerSymbolBaseDir: "/symbols/",
       imagesBaseDir: "/images/",
@@ -1929,6 +1981,9 @@ var trackdirect = {
    * @return null
    */
   _handleAprsPacket: function (packet, animate) {
+    //xxx
+    if (packet.latitude >= 49.183 && packet.latitude <= 49.184 && packet.longitude >= 17.291 && packet.longitude <= 17.292)
+      console.log("hit 1: " + packet.latitude + "  " + packet.raw_path);
     var markerIdKey = this._markerCreator.addPacket(packet, true);
     if (markerIdKey !== null) {
       var highlight = false;

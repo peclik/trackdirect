@@ -441,19 +441,20 @@ trackdirect.models.InfoWindow.prototype._getCompletePacketDiv = function () {
       packetDiv.append(this._getRngDiv(rngRange));
     }
     if ($(window).height() >= 300) {
-      var transmitDistance = this._getTransmitDistance(this._marker.packet);
+      var transmitDistance = this._marker.getTransmitDistance();
+      var rxSNR = this._marker.getRxSNR();
       var tailDistance = this._getTailDistance(
         this._defaultMap.markerCollection.getMarkerMasterMarkerKeyId(
           this._marker.markerIdKey
         )
       );
       if (
-        (transmitDistance !== null &&
-          Math.round(transmitDistance / 100) != 0) ||
+        (transmitDistance !== null && Math.round(transmitDistance / 100) != 0) ||
+         rxSNR != null ||
         (tailDistance !== null && Math.round(tailDistance) > 0)
       ) {
         packetDiv.append(this._getSpaceDiv());
-        packetDiv.append(this._getTransmitDistanceDiv(transmitDistance));
+        packetDiv.append(this._getTransmitDistanceSNRDiv(transmitDistance, rxSNR));
         packetDiv.append(this._getTailDistanceDiv(tailDistance));
       }
     }
@@ -495,12 +496,19 @@ trackdirect.models.InfoWindow.prototype._getCompletePacketDiv = function () {
  * @return {object}
  */
 trackdirect.models.InfoWindow.prototype._getPacketTimeDiv = function () {
+  var dateString = '';
   if (this._marker.packet.timestamp == 0) {
-    dateString =
+    dateString +=
       '<span style="color: grey;">No known packet for specified limits.</span>';
   } else {
+    var txTime = '';
+    if (this._marker.packet.reported_timestamp != null)
+      dateString += 'tx:&nbsp;' +
+        moment(this._marker.packet.reported_timestamp * 1000).format(
+          trackdirect.settings.dateFormatNoTimeZone) + '<br/>';
+
     var date = new Date(this._marker.packet.timestamp * 1000);
-    var dateString = moment(date).format(
+    dateString += 'rx:&nbsp;' + moment(date).format(
       trackdirect.settings.dateFormatNoTimeZone
     );
     if (
@@ -703,34 +711,46 @@ trackdirect.models.InfoWindow.prototype._getRngDiv = function (rngRange) {
 /**
  * Get info window transmit distance div
  * @param {float} transmitDistance
+ * @param {float} rxSNR
  * @return {object}
  */
-trackdirect.models.InfoWindow.prototype._getTransmitDistanceDiv = function (
-  transmitDistance
+trackdirect.models.InfoWindow.prototype._getTransmitDistanceSNRDiv = function (
+  transmitDistance,
+  rxSNR
 ) {
-  if (transmitDistance !== null && Math.round(transmitDistance / 100) != 0) {
+  if ((transmitDistance !== null && Math.round(transmitDistance / 100) != 0) || rxSNR !== null) {
     var transmitDistanceDiv = $(document.createElement("div"));
     transmitDistanceDiv.css("clear", "both");
     transmitDistanceDiv.css("color", "#273c20");
-    if (this._defaultMap.state.useImperialUnit) {
-      transmitDistance =
-        Math.round(
-          trackdirect.services.imperialConverter.convertKilometerToMile(
-            transmitDistance / 1000
-          ) * 10
-        ) / 10;
-      transmitDistanceUnit = "miles";
-    } else {
-      transmitDistance = Math.round(transmitDistance / 100) / 10;
-      transmitDistanceUnit = "km";
+
+    if (transmitDistance !== null && Math.round(transmitDistance / 100) != 0) {
+      if (this._defaultMap.state.useImperialUnit) {
+        transmitDistance =
+          Math.round(
+            trackdirect.services.imperialConverter.convertKilometerToMile(
+              transmitDistance / 1000
+            ) * 10
+          ) / 10;
+        transmitDistanceUnit = "miles";
+      } else {
+        transmitDistance = Math.round(transmitDistance / 100) / 10;
+        transmitDistanceUnit = "km";
+      }
+      transmitDistanceDiv.append(
+        '<span title="Distance to receiving digipeater/igate">Rx dist: ' +
+          transmitDistance +
+          " " +
+          transmitDistanceUnit +
+          "</span>"
+      );
     }
-    transmitDistanceDiv.append(
-      '<span title="Transmit distance to receiving digipeater/igate">Transmit distance: ' +
-        transmitDistance +
-        " " +
-        transmitDistanceUnit +
-        "</span>"
-    );
+
+    if (rxSNR !== null) {
+      transmitDistanceDiv.append(
+        ' <span title="Rx signal to noise ration">SNR: ' + rxSNR.toFixed(1) + ' dB</span>'
+      );
+    }
+
     return transmitDistanceDiv;
   }
   return null;
@@ -1232,6 +1252,13 @@ trackdirect.models.InfoWindow.prototype._getMenuDiv = function (
   ) {
     menuUl.append(this._getMenuDivCoverageLink());
   }
+  if (
+    !trackdirect.isEmbedded &&
+    !inIframe() &&
+    this._marker.packet.source_id != 2
+  ) {
+    menuUl.append(this._getMenuDivAllTransmitLinesLink());
+  }
   return menuWrapperDiv;
 };
 
@@ -1398,6 +1425,41 @@ trackdirect.models.InfoWindow.prototype._getMenuDivCoverageLink = function () {
     menuLink.html("Hide Coverage");
   } else {
     menuLink.html("Coverage");
+  }
+  menuLi.append(menuLink);
+  return menuLi;
+};
+
+/**
+ * Get the link for showing all transmit lines related to the station
+ * @return {object}
+ */
+trackdirect.models.InfoWindow.prototype._getMenuDivAllTransmitLinesLink = function () {
+  var allTransmitLineLinkElementClass =
+    "allTransmitLineLink" + this._marker.packet.station_id;
+  var menuLi = $(document.createElement("li"));
+  menuLi.css(this._getMenuDivLinkCss());
+  var menuLink = $(document.createElement("a"));
+  menuLink.css("color", "#337ab7");
+  menuLink.css("white-space", "nowrap");
+  menuLink.attr("href", "#");
+  menuLink.addClass(allTransmitLineLinkElementClass);
+  menuLink.attr(
+    "onclick",
+    "trackdirect.toggleAllTransmitLinesLink(" +
+      this._marker.packet.station_id +
+      ', "' +
+      allTransmitLineLinkElementClass +
+      '"); return false;'
+  );
+
+  var hasPermanentTransmitLines = this._defaultMap.markerCollection.hasPermanentTransmitLines(
+    this._marker.packet.station_id
+  );
+  if (hasPermanentTransmitLines) {
+    menuLink.html("Hide Tx-Lines");
+  } else {
+    menuLink.html("All Tx-Lines");
   }
   menuLi.append(menuLink);
   return menuLi;
@@ -1691,66 +1753,6 @@ trackdirect.models.InfoWindow.prototype._getTailDistance = function (
         }
       }
       return distance;
-    }
-  }
-  return null;
-};
-
-/**
- * Returns the transmit distance in meters for specified packet
- * @param {trackdirect.models.Packet} packet
- * @return int
- */
-trackdirect.models.InfoWindow.prototype._getTransmitDistance = function (
-  packet
-) {
-  if (
-    typeof packet.station_location_path !== "undefined" &&
-    packet.station_location_path !== null &&
-    packet.station_location_path.length >= 1
-  ) {
-    var relatedStationLatLng = {
-      lat: parseFloat(packet.station_location_path[0][0]),
-      lng: parseFloat(packet.station_location_path[0][1]),
-    };
-    var distance = trackdirect.services.distanceCalculator.getDistance(
-      packet.getLatLngLiteral(),
-      relatedStationLatLng
-    );
-    if (distance !== null) {
-      return distance;
-    }
-  }
-
-  if (
-    typeof packet.station_id_path !== "undefined" &&
-    packet.station_id_path !== null &&
-    packet.station_id_path.length >= 1
-  ) {
-    for (var i = 0; i < packet.station_id_path.length; i++) {
-      var relatedStationId = packet.station_id_path[i];
-      var relatedStationPacket =
-        this._defaultMap.markerCollection.getStationLatestPacket(
-          relatedStationId
-        );
-      if (relatedStationPacket !== null) {
-        // found first station!
-        break;
-      }
-    }
-
-    if (relatedStationPacket !== null) {
-      var relatedStationLatLng = {
-        lat: parseFloat(relatedStationPacket.latitude),
-        lng: parseFloat(relatedStationPacket.longitude),
-      };
-      var distance = trackdirect.services.distanceCalculator.getDistance(
-        packet.getLatLngLiteral(),
-        relatedStationLatLng
-      );
-      if (distance !== null) {
-        return distance;
-      }
     }
   }
   return null;

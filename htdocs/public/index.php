@@ -47,12 +47,43 @@
 
             <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-providers/1.11.0/leaflet-providers.min.js" integrity="sha512-TO+Wd5hbpDsACTmvzSqAZL83jMQCXGRFNoS4WZxcxrlJBTdgMYaT7g5uX49C5+Kbuxzlg2A+TFJ6UqdsXuOKLw==" crossorigin="anonymous"></script>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js" integrity="sha512-KhIBJeCI4oTEeqOmRi2gDJ7m+JARImhUYgXWiOTIp9qqySpFUAJs09erGKem4E5IPuxxSTjavuurvBitBmwE0w==" crossorigin="anonymous"></script>
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/OverlappingMarkerSpiderfier-Leaflet/0.2.6/oms.min.js" integrity="sha512-V8RRDnS4BZXrat3GIpnWx+XNYBHQGdK6nKOzMpX4R0hz9SPWt7fltGmmyGzUkVFZUQODO1rE+SWYJJkw3SYMhg==" crossorigin="anonymous"></script>
         <?php endif; ?>
 
         <!-- Track Direct jslib -->
         <script type="text/javascript" src="/js/trackdirect.min.js"></script>
 
+        <!--
+        <script type="text/javascript" src="/js/dbg/other/OverlappingMarkerSpiderfier-Leaflet.js"></script>
+        <script type="text/javascript" src="/js/dbg/trackdirect.js"></script>
+        <script type="text/javascript" src="/js/dbg/trackdirect/Websocket.js"></script>
+        <script type="text/javascript" src="/js/dbg/trackdirect/MarkerCreator.js"></script>
+        <script type="text/javascript" src="/js/dbg/trackdirect/services/dateFormatter.js"></script>
+        <script type="text/javascript" src="/js/dbg/trackdirect/services/callbackExecutor.js"></script>
+        <script type="text/javascript" src="/js/dbg/trackdirect/services/symbolPathFinder.js"></script>
+        <script type="text/javascript" src="/js/dbg/trackdirect/services/mapSectorCalculator.js"></script>
+        <script type="text/javascript" src="/js/dbg/trackdirect/services/distanceCalculator.js"></script>
+        <script type="text/javascript" src="/js/dbg/trackdirect/services/imperialConverter.js"></script>
+        <script type="text/javascript" src="/js/dbg/trackdirect/services/mapAttributionModifier.js"></script>
+        <script type="text/javascript" src="/js/dbg/trackdirect/services/stationColorCalculator.js"></script>
+        <script type="text/javascript" src="/js/dbg/trackdirect/models/Label.js"></script>
+        <script type="text/javascript" src="/js/dbg/trackdirect/models/RngCircle.js"></script>
+        <script type="text/javascript" src="/js/dbg/trackdirect/models/MapState.js"></script>
+        <script type="text/javascript" src="/js/dbg/trackdirect/models/Marker.js"></script>
+        <script type="text/javascript" src="/js/dbg/trackdirect/models/HeatMap.js"></script>
+        <script type="text/javascript" src="/js/dbg/trackdirect/models/TransmitAnimation.js"></script>
+        <script type="text/javascript" src="/js/dbg/trackdirect/models/DirectionPolyline.js"></script>
+        <script type="text/javascript" src="/js/dbg/trackdirect/models/DashedTailPolyline.js"></script>
+        <script type="text/javascript" src="/js/dbg/trackdirect/models/InfoWindow.js"></script>
+        <script type="text/javascript" src="/js/dbg/trackdirect/models/Ruler.js"></script>
+        <script type="text/javascript" src="/js/dbg/trackdirect/models/MarkerCollection.js"></script>
+        <script type="text/javascript" src="/js/dbg/trackdirect/models/TransmitPolyline.js"></script>
+        <script type="text/javascript" src="/js/dbg/trackdirect/models/PhgCircle.js"></script>
+        <script type="text/javascript" src="/js/dbg/trackdirect/models/StationCoveragePolygon.js"></script>
+        <script type="text/javascript" src="/js/dbg/trackdirect/models/Packet.js"></script>
+        <script type="text/javascript" src="/js/dbg/trackdirect/models/TailPolyline.js"></script>
+        <script type="text/javascript" src="/js/dbg/trackdirect/models/Map.js"></script>
+        <script type="text/javascript" src="/js/dbg/other/common.js"></script>
+        -->
 
         <script type="text/javascript" src="/js/main.js"></script>
         <link rel="stylesheet" href="/css/main.css">
@@ -188,9 +219,10 @@
                     <a href="javascript:void(0);" id="tdTopnavTimelengthDefault" onclick="trackdirect.setTimeLength(60); $('#tdTopnavTimelength>a').removeClass('dropdown-content-checkbox-active'); $(this).addClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox">1 hour</a>
                     <a href="javascript:void(0);" onclick="trackdirect.setTimeLength(180); $('#tdTopnavTimelength>a').removeClass('dropdown-content-checkbox-active'); $(this).addClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox">3 hours</a>
                     <a href="javascript:void(0);" onclick="trackdirect.setTimeLength(360); $('#tdTopnavTimelength>a').removeClass('dropdown-content-checkbox-active'); $(this).addClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox">6 hours</a>
-                    <a href="javascript:void(0);" onclick="trackdirect.setTimeLength(720); $('#tdTopnavTimelength>a').removeClass('dropdown-content-checkbox-active'); $(this).addClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox dropdown-content-checkbox-only-filtering dropdown-content-checkbox-hidden">12 hours</a>
-                    <a href="javascript:void(0);" onclick="trackdirect.setTimeLength(1080); $('#tdTopnavTimelength>a').removeClass('dropdown-content-checkbox-active'); $(this).addClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox dropdown-content-checkbox-only-filtering dropdown-content-checkbox-hidden">18 hours</a>
+                    <a href="javascript:void(0);" onclick="trackdirect.setTimeLength(720); $('#tdTopnavTimelength>a').removeClass('dropdown-content-checkbox-active'); $(this).addClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox">12 hours</a>
+                    <a href="javascript:void(0);" onclick="trackdirect.setTimeLength(1080); $('#tdTopnavTimelength>a').removeClass('dropdown-content-checkbox-active'); $(this).addClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox">18 hours</a>
                     <a href="javascript:void(0);" onclick="trackdirect.setTimeLength(1440); $('#tdTopnavTimelength>a').removeClass('dropdown-content-checkbox-active'); $(this).addClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox dropdown-content-checkbox-only-filtering dropdown-content-checkbox-hidden">24 hours</a>
+                    <a href="javascript:void(0);" onclick="trackdirect.setTimeLength(10080); $('#tdTopnavTimelength>a').removeClass('dropdown-content-checkbox-active'); $(this).addClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox">! 7 days</a>
                 </div>
             </div>
 
@@ -232,12 +264,10 @@
                     <a href="javascript:void(0);" onclick="trackdirect.toggleImperialUnits(); $(this).toggleClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox <?php echo (isImperialUnitUser()?'dropdown-content-checkbox-active':''); ?>" title="Switch to imperial units">Use imperial units</a>
                     <a href="javascript:void(0);" onclick="trackdirect.toggleStationaryPositions(); $(this).toggleClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox" title="Hide stations that is not moving">Hide not moving stations</a>
 
-                    <!--
                     <a href="javascript:void(0);" onclick="trackdirect.toggleInternetPositions(); $(this).toggleClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox" title="Hide stations that sends packet using TCP/UDP">Hide Internet stations</a>
                     <a href="javascript:void(0);" onclick="trackdirect.toggleCwopPositions(); $(this).toggleClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox" title="Hide CWOP weather stations">Hide CWOP stations</a>
                     <a href="javascript:void(0);" onclick="trackdirect.toggleOgflymPositions(); $(this).toggleClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox" title="Hide model airplanes (OGFLYM)">Hide model airplanes (OGFLYM)</a>
                     <a href="javascript:void(0);" onclick="trackdirect.toggleUnknownPositions(); $(this).toggleClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox" title="Hide unknown aircrafts">Hide unknown aircrafts</a>
-                    -->
                 </div>
             </div>
 

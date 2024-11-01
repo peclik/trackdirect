@@ -24,6 +24,12 @@ trackdirect.MarkerCreator.prototype.addPacket = function (
   }
   var markerIdKey = this._map.markerCollection.getMarkerIdKey(packet.marker_id);
 
+  //xxx
+  if (packet.latitude >= 49.183 && packet.latitude <= 49.184 && packet.longitude >= 17.291 && packet.longitude <= 17.292) {
+    console.log("hit 2: " + packet.latitude + "  " + packet.raw_path);
+    console.log(packet);
+  }
+
   if (this._map.markerCollection.isExistingMarker(markerIdKey)) {
     var marker = this._map.markerCollection.getMarker(markerIdKey);
     if (
@@ -273,7 +279,7 @@ trackdirect.MarkerCreator.prototype._createMarker = function (packet) {
   } else {
     var marker = new trackdirect.models.Marker(packet, true, this._map);
     this._map.markerCollection.addDotMarker(markerIdKey, marker);
-    this._addInfoWindowClickListener(marker, false);
+    this._addInfoWindowClickListener(marker, true);
   }
   marker.markerIdKey = markerIdKey;
 
@@ -364,6 +370,7 @@ trackdirect.MarkerCreator.prototype._convertToDotMarker = function (
     this._map.markerCollection.addDotMarker(markerIdKey, dotMarker);
 
     // Remove from oms
+    /*
     if (this._map.oms) {
       this._map.oms.removeMarker(dotMarker);
 
@@ -379,6 +386,7 @@ trackdirect.MarkerCreator.prototype._convertToDotMarker = function (
         });
       }
     }
+    */
 
     // Allways hide label for marker that is converted to dot-marker (we are not sure if label will still be used)
     if (this._map.markerCollection.hasMarkerLabel(markerIdKey)) {
@@ -858,7 +866,8 @@ trackdirect.MarkerCreator.prototype.isBadPacket = function (packet) {
     }
     if (packet.db == 0) {
       if (this._map.markerCollection.isDuplicate(packet)) {
-        return true; // We think this is a duplicate
+        //xxx
+        //return true; // We think this is a duplicate
       }
     }
     if (
@@ -869,6 +878,8 @@ trackdirect.MarkerCreator.prototype.isBadPacket = function (packet) {
     ) {
       // For some reason we got the same packet again, duplicate!
       // (this may happen when filtering on a station with only non confirmed packets)
+      //xxx
+      console.log("duplicate 1");
       return true;
     }
 
@@ -877,7 +888,8 @@ trackdirect.MarkerCreator.prototype.isBadPacket = function (packet) {
     } else {
       if (marker.packet.timestamp >= packet.timestamp) {
         // It's important that we do not allow two packets with the same timestamp since they may be the same packet, which can cause wierd problems
-        return true;
+        //console.log("duplicate 2");
+        //return true;
       }
 
       if (
@@ -886,7 +898,8 @@ trackdirect.MarkerCreator.prototype.isBadPacket = function (packet) {
         Math.abs(marker.packet.reported_timestamp - packet.reported_timestamp) < 600
       ) {
         if (marker.packet.reported_timestamp > packet.reported_timestamp) {
-          return true;
+          //console.log("duplicate 3");
+          //return true;
         }
       }
     }
@@ -905,7 +918,8 @@ trackdirect.MarkerCreator.prototype.isBadPacket = function (packet) {
         relatedMarker.overwrite == false &&
         relatedMarker.packet.timestamp > packet.timestamp
       ) {
-        return true;
+        //console.log("duplicate 4");
+        //return true;
       }
     }
   }

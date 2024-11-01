@@ -910,53 +910,125 @@ trackdirect.models.Marker.prototype.getToolTipContent = function () {
       moment(date).format(trackdirect.settings.dateFormatNoTimeZone);
   }
 
+  var txTime = '';
+  if (this.packet.reported_timestamp != null)
+    txTime = '<div> tx: ' + moment(this.packet.reported_timestamp * 1000).format(trackdirect.settings.dateFormatNoTimeZone) + '</div>';
+
+  var name = escapeHtml(this.packet.station_name);
+
   if (this.packet.getOgnRegistration() != null) {
-    var name = escapeHtml(this.packet.station_name);
     name += ", ";
     name += escapeHtml(this.packet.getOgnRegistration());
     if (this.packet.getOgnCN() !== null) {
       name += " [" + escapeHtml(this.packet.getOgnCN()) + "]";
     }
-    return (
-      '<div><img style="float: left; width:20px; height:20px;" src="' +
-      iconUrl +
-      '" />' +
-      '<span style="font-weight: bold; font-family: Helvetica; font-size: 10px; line-height: 22px; margin-left: 5px; margin-right: 25px">' +
-      name +
-      "</span></div>" +
-      '<div style="clear:both; font-family: Helvetica; font-size: 9px;">' +
-      dateString +
-      "</div>"
-    );
-  } else if (this.packet.station_name == this.packet.sender_name) {
-    return (
-      '<div><img style="float: left; width:20px; height:20px;" src="' +
-      iconUrl +
-      '" />' +
-      '<span style="font-weight: bold; font-family: Helvetica; font-size: 10px; line-height: 22px; margin-left: 5px; margin-right: 25px">' +
-      escapeHtml(this.packet.station_name) +
-      "</span></div>" +
-      '<div style="clear:both; font-family: Helvetica; font-size: 9px;">' +
-      dateString +
-      "</div>"
-    );
-  } else {
-    return (
-      '<div><img style="float: left; width:20px; height:20px;" src="' +
-      iconUrl +
-      '" />' +
-      '<span style="font-weight: bold; font-family: Helvetica; font-size: 10px; line-height: 22px; margin-left: 5px; margin-right: 25px">' +
-      escapeHtml(this.packet.station_name) +
-      "</span></div>" +
-      '<div style="clear:both; font-family: Helvetica; font-size: 9px;">Sent by ' +
-      escapeHtml(this.packet.sender_name) +
-      "</div>" +
-      '<div style="clear:both; font-family: Helvetica; font-size: 9px;">' +
-      dateString +
-      "</div>"
-    );
   }
+
+  return (
+    '<div><img style="float: left; width:20px; height:20px;" src="' +
+    iconUrl +
+    '" />' +
+    '<span style="font-weight: bold; font-family: Helvetica; font-size: 10px; line-height: 22px; margin-left: 5px; margin-right: 25px">' +
+    name +
+    '</span></div>' +
+    '<div style="clear:both; font-family: Helvetica; font-size: 9px;">' +
+      ((this.packet.station_name == this.packet.sender_name) ? '' : ('<div>' + escapeHtml(this.packet.sender_name) + '/<div>')) +
+      txTime +
+      '<div> rx: ' + dateString + '&nbsp;&bull;&nbsp;' + this._getTransmitDistanceText() + '&nbsp;&bull;&nbsp;' + this._getRxSNRText() + '</div>' +
+      '<div>' + this._getPacketSpeedAltitudeCourseText() + '</div>' +
+    '</div>'
+  );
+
 };
+
+/**
+ * Get packet speed altitude and course text
+ * @return {string}
+ */
+trackdirect.models.Marker.prototype._getPacketSpeedAltitudeCourseText = function () {
+  if (
+    Math.round(this.packet.speed) != 0 ||
+    Math.round(this.packet.course) != 0 ||
+    Math.round(this.packet.altitude) != 0
+  ) {
+    var text = "";
+
+    if (this.packet.speed !== null) {
+      if (this._defaultMap.state.useImperialUnit) {
+        text +=
+          Math.round(
+            trackdirect.services.imperialConverter.convertKilometerToMile(
+              this.packet.speed
+            )
+          ) + " mph ";
+      } else {
+        text += Math.round(this.packet.speed) + " km/h ";
+      }
+    }
+
+    if (this.packet.course !== null) {
+      text += Math.round(this.packet.course) + "&deg; ";
+    }
+
+    if (this.packet.altitude !== null) {
+      if (this._defaultMap.state.useImperialUnit) {
+        text +=
+          " alt " +
+            Math.round(
+              trackdirect.services.imperialConverter.convertMeterToFeet(
+                this.packet.altitude
+              )
+            ) +
+            " ft ";
+      } else {
+        text += " alt " + Math.round(this.packet.altitude) + " m ";
+      }
+    }
+
+    return text;
+  }
+  return '';
+};
+
+/**
+ * Get transmit distance text
+ * @return {string}
+ */
+trackdirect.models.Marker.prototype._getTransmitDistanceText = function () {
+  var transmitDistance = this.getTransmitDistance();
+
+  if (transmitDistance !== null && Math.round(transmitDistance / 100) != 0) {
+    var text = "";
+    if (this._defaultMap.state.useImperialUnit) {
+      text +=
+        Math.round(
+          trackdirect.services.imperialConverter.convertKilometerToMile(
+            transmitDistance / 1000
+          ) * 10
+        ) / 10 + "miles";
+    } else {
+      text += Math.round(transmitDistance / 100) / 10 + "km";
+    }
+
+    return text;
+  }
+  return '';
+};
+
+/**
+ * Get rx singal to noise ratio text
+ * @return {string}
+ */
+trackdirect.models.Marker.prototype._getRxSNRText = function () {
+  const regex = /[-0-9.]+dB/gm;
+  var snr = this.getRxSNR();
+
+  if (snr !== null)
+    return snr.toFixed(1) + "dB";
+
+  return "";
+};
+
 
 /**
  * Get a suitable google marker options object
@@ -1174,6 +1246,70 @@ trackdirect.models.Marker.prototype._addMarkerTooltip = function () {
 };
 
 /**
+ * Show tooltip and transmit line on mouse over
+ * @param {boolean} show (null to hide immediately)
+ * @param {boolean} permanent (do not hide on mouseout)
+ */
+trackdirect.models.Marker.prototype.toggleTransmitLine = function (
+  show,
+  permanent
+) {
+  if (show === null) {
+    if (this.transmitPolyLine != null && this.transmitPolyLine.isVisible()) {
+      this.transmitPolyLine.hide(0);
+      this.transmitPolyLine.permanent = false;
+    }
+  } else if (show == false) {
+    if (this.transmitPolyLine != null && this.transmitPolyLine.isVisible() &&
+      (!this.transmitPolyLine.permanent || permanent)) {
+      this.transmitPolyLine.hide(show === null ? 0 : 2000);
+      this.transmitPolyLine.permanent = false;
+    }
+  } else {
+    if (this.transmitPolyLine == null) {
+      this.transmitPolyLine = new trackdirect.models.TransmitPolyline(
+        this.packet,
+        this._defaultMap
+      );
+      this.transmitPolyLine.permanent = false;
+    }
+    if (!this.transmitPolyLine.permanent)
+      this.transmitPolyLine.permanent = permanent;
+    this.transmitPolyLine.show();
+  }
+};
+
+/**
+ * Show tooltip and transmit line on mouse over
+ * @param {boolean} show
+ * @param {boolean} permanent (do not hide on mouseout)
+ */
+trackdirect.models.Marker.prototype._toggleNearbyMarkersTransmitLine = function (
+  show,
+  permanent
+) {
+  var nearbyMarkerData, nonNearbyMarkers;
+  if (this._map.oms) {
+    // oms.findNearbyMarkers returns markers including this
+    [nearbyMarkerData, nonNearbyMarkers] = this._map.oms.findNearbyMarkers(this);
+  } else {
+    // show line for this marker at least
+    nearbyMarkerData.marker.this;
+  }
+
+  for (const d of nearbyMarkerData) {
+    const m = d.marker;
+    m.toggleTransmitLine(show, permanent);
+  }
+
+  //TODO: when the lines are shown on mouseover, and the user clicks on the marker,
+  // oms will spiderfy nearby markers, mouseover is then called on the original
+  // marker but oms.findNearbyMarkers will not return other original nearby markers,
+  // the line stay shown for them.
+  // Could be fixed by listening on spiderfy event from oms.
+};
+
+/**
  * Create Leaflet map tooltip on marker
  */
 trackdirect.models.Marker.prototype._addMarkerLeafletMapTooltip = function () {
@@ -1199,19 +1335,11 @@ trackdirect.models.Marker.prototype._addMarkerLeafletMapTooltip = function () {
         isMyTooltipVisible = true;
       }
 
-      if (me.transmitPolyLine == null) {
-        me.transmitPolyLine = new trackdirect.models.TransmitPolyline(
-          me.packet,
-          me._defaultMap
-        );
-      }
-      me.transmitPolyLine.show();
+      me._toggleNearbyMarkersTransmitLine(true, false);
     });
 
     this.on("mouseout", function (e) {
-      if (me.transmitPolyLine != null && me.transmitPolyLine.isVisible()) {
-        me.transmitPolyLine.hide(2000);
-      }
+      me._toggleNearbyMarkersTransmitLine(false, false);
 
       if (
         typeof tooltip !== "undefined" &&
@@ -1224,10 +1352,7 @@ trackdirect.models.Marker.prototype._addMarkerLeafletMapTooltip = function () {
     });
 
     this.on("remove", function (e) {
-      if (me.transmitPolyLine != null && me.transmitPolyLine.isVisible()) {
-        me.transmitPolyLine.hide(0);
-      }
-
+      this.toggleTransmitLine(null, false);
       if (
         typeof tooltip !== "undefined" &&
         isMyTooltipVisible &&
@@ -1290,19 +1415,11 @@ trackdirect.models.Marker.prototype._addMarkerGoogleMapTooltip = function () {
         .show();
       isMyTooltipVisible = true;
 
-      if (me.transmitPolyLine == null) {
-        me.transmitPolyLine = new trackdirect.models.TransmitPolyline(
-          me.packet,
-          me._defaultMap
-        );
-      }
-      me.transmitPolyLine.show();
+      this.toggleTransmitLine(true, false);
     });
 
     google.maps.event.addListener(this, "mouseout", function () {
-      if (me.transmitPolyLine != null && me.transmitPolyLine.isVisible()) {
-        me.transmitPolyLine.hide(2000);
-      }
+      this.toggleTransmitLine(false, false);
 
       if (isMyTooltipVisible) {
         $("#marker-tooltip").hide();
@@ -1311,9 +1428,7 @@ trackdirect.models.Marker.prototype._addMarkerGoogleMapTooltip = function () {
     });
 
     this.addTdListener("onhide", function () {
-      if (me.transmitPolyLine != null && me.transmitPolyLine.isVisible()) {
-        me.transmitPolyLine.hide(0);
-      }
+      this.toggleTransmitLine(null, false);
 
       if (isMyTooltipVisible) {
         $("#marker-tooltip").hide();
@@ -1369,6 +1484,80 @@ trackdirect.models.Marker.prototype._isMarkersEqual = function (marker2) {
   } else {
     return false;
   }
+};
+
+/**
+ * Returns the transmit distance in meters for specified packet
+ * @param {trackdirect.models.Packet} packet
+ * @return int
+ */
+trackdirect.models.Marker.prototype.getTransmitDistance = function () {
+  if (
+    typeof this.packet.station_location_path !== "undefined" &&
+    this.packet.station_location_path !== null &&
+    this.packet.station_location_path.length >= 1
+  ) {
+    var relatedStationLatLng = {
+      lat: parseFloat(this.packet.station_location_path[0][0]),
+      lng: parseFloat(this.packet.station_location_path[0][1]),
+    };
+    var distance = trackdirect.services.distanceCalculator.getDistance(
+      this.packet.getLatLngLiteral(),
+      relatedStationLatLng
+    );
+    if (distance !== null) {
+      return distance;
+    }
+  }
+
+  if (
+    typeof this.packet.station_id_path !== "undefined" &&
+    this.packet.station_id_path !== null &&
+    this.packet.station_id_path.length >= 1
+  ) {
+    for (var i = 0; i < this.packet.station_id_path.length; i++) {
+      var relatedStationId = this.packet.station_id_path[i];
+      var relatedStationPacket =
+        this._defaultMap.markerCollection.getStationLatestPacket(
+          relatedStationId
+        );
+      if (relatedStationPacket !== null) {
+        // found first station!
+        break;
+      }
+    }
+
+    if (relatedStationPacket !== null) {
+      var relatedStationLatLng = {
+        lat: parseFloat(relatedStationPacket.latitude),
+        lng: parseFloat(relatedStationPacket.longitude),
+      };
+      var distance = trackdirect.services.distanceCalculator.getDistance(
+        packet.getLatLngLiteral(),
+        relatedStationLatLng
+      );
+      if (distance !== null) {
+        return distance;
+      }
+    }
+  }
+  return null;
+};
+
+/**
+ * Get rx singal to noise ratio
+ * @return {float}
+ */
+trackdirect.models.Marker.prototype.getRxSNR = function () {
+  const regex = /([-0-9.]+)dB/gm;
+
+  if (this.packet.raw !== null) {
+    var m = regex.exec(this.packet.raw);
+    if (m !== null && m.length > 1 && m[1] !== null)
+      return parseFloat(m[1]);
+  }
+
+  return null;
 };
 
 /**
@@ -1469,3 +1658,5 @@ trackdirect.models.Marker.prototype._isMarkersEqual = function (marker2) {
       }
     }
   });
+
+

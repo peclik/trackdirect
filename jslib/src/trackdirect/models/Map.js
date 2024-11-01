@@ -1346,6 +1346,7 @@ trackdirect.models.Map.prototype._initLeafletMapEvents = function () {
 trackdirect.models.Map.prototype._initOms = function () {
   var options = {};
   options["nearbyDistance"] = 12;
+  options["keepSpiderfied"] = true;
   if (typeof google === "object" && typeof google.maps === "object") {
     var mti = google.maps.MapTypeId;
     this.oms = new OverlappingMarkerSpiderfier(this, options);
@@ -1416,7 +1417,7 @@ trackdirect.models.Map.prototype._getLeafletMapOptions = function () {
     attributionControl: true,
     zoomControl: false,
     minZoom: 3,
-    maxZoom: 16,
+    maxZoom: 21,
     closePopupOnClick: false,
   };
 

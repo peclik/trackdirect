@@ -38,6 +38,9 @@ trackdirect.models.MarkerCollection = function () {
   // Contains coverage values indexed by stationId
   this._stationCoverage = {};
 
+  // Contains flag if permanent transmit lines are visible indexed by stationId
+  this._stationPermanentTransmitLines = {};
+
   this.resetAllMarkers();
 };
 
@@ -338,6 +341,35 @@ trackdirect.models.MarkerCollection.prototype.hasCoveragePolygon = function (
   if (
     stationId in this._stationCoverage &&
     this._stationCoverage[stationId] !== null
+  ) {
+    return true;
+  }
+  return false;
+};
+
+/**
+ * Set permanent transmit lines flag for the station
+ * @param {int} stationId
+ * @param {boolean} permanentTransmitLines
+ */
+trackdirect.models.MarkerCollection.prototype.setPermanentTransmitLines = function (
+  stationId,
+  permanentTransmitLines
+) {
+  this._stationPermanentTransmitLines[stationId] = permanentTransmitLines;
+};
+
+/**
+ * Returns true if specified station has a permanent transmit lines visible
+ * @param {int} stationId
+ * @return {boolean}
+ */
+trackdirect.models.MarkerCollection.prototype.hasPermanentTransmitLines = function (
+  stationId
+) {
+  if (
+    stationId in this._stationPermanentTransmitLines &&
+    this._stationPermanentTransmitLines[stationId] == true
   ) {
     return true;
   }
@@ -792,6 +824,7 @@ trackdirect.models.MarkerCollection.prototype.resetAllMarkers = function () {
   this._positionMarkersIdKeys = {};
   this._mapSectorMarkerIdKeys = {};
   this._stationCoverage = {};
+  this._stationPermanentTransmitLines = {};
 };
 
 /**

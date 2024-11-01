@@ -575,9 +575,9 @@ trackdirect.models.Packet.prototype.getLinkifiedRawPath = function () {
           relatedStationName +
           ", station has not been heard for a long time.');" +
           " }" +
-          ' return false;">' +
+          ' return false;"><b>' +
           relatedStationName +
-          "</a>";
+          "</b></a>";
 
         rawPath = rawPath.replaceAll(
           "#" + relatedStationName + ",",
@@ -620,7 +620,7 @@ trackdirect.models.Packet.prototype.getLinkifiedRawPath = function () {
       var rawPath =
         rawPathArray[0] +
         " via " +
-        rawPathArray.join(",").replace(rawPathArray[0] + ",", "");
+        rawPathArray.join(", ").replace(rawPathArray[0] + ", ", "");
     }
     return rawPath;
   }
