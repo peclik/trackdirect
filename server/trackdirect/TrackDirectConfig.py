@@ -2,6 +2,7 @@ import os
 import os.path
 import configparser
 
+import trackdirect.common.AppSettings as AppSettings
 from trackdirect.common.Singleton import Singleton
 
 
@@ -113,7 +114,7 @@ class TrackDirectConfig(Singleton):
             self.websocketAprsHost2 = None
             self.websocketAprsPort2 = None
 
-        if (self.websocketAprsSourceId1 == 5 or self.websocketAprsSourceId2 == 5) :
+        if ((self.websocketAprsSourceId1 == 5 or self.websocketAprsSourceId2 == 5) and not AppSettings.debug_ogn_ini_max_default_time) :
             # At least one source is of type OGN, disable display of older data
             self.allowTimeTravel = False
             if (self.maxDefaultTime > 1440) :
@@ -166,7 +167,7 @@ class TrackDirectConfig(Singleton):
                 self.collector[collectorNumber]['error_log'] = configParser.get(
                     'collector' + str(collectorNumber), 'error_log').strip('"')
 
-                if (self.websocketAprsSourceId1 == 5 or self.websocketAprsSourceId2 == 5) :
+                if ((self.websocketAprsSourceId1 == 5 or self.websocketAprsSourceId2 == 5) and not AppSettings.debug_ogn_ini_frequency_limit) :
                     # source is of type OGN, make sure we do not save to many packets (will cause to high load on db)
                     if (self.collector[collectorNumber]['frequency_limit'] < 10) :
                         self.collector[collectorNumber]['frequency_limit'] = 10

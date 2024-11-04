@@ -1,4 +1,4 @@
-
+import trackdirect.common.AppSettings as AppSettings
 from trackdirect.common.Repository import Repository
 from trackdirect.objects.Packet import Packet
 from trackdirect.database.PacketTableCreator import PacketTableCreator
@@ -17,6 +17,13 @@ class PacketRepository(Repository):
             db (psycopg2.Connection):  Database connection (with autocommit)
         """
         self.db = db
+
+        if (AppSettings.debug_order_by_reported_timestamp):
+            self.timeOrderQueryAsc = "packet.reported_timestamp, packet.id"
+            self.timeOrderQueryDesc = "packet.reported_timestamp desc, packet.id desc"
+        else:
+            self.timeOrderQueryAsc = "packet.id"
+            self.timeOrderQueryDesc = "packet.id desc"
 
         # After testing I have realized that several queries are faster if you query one packet child at the time
         # That is why we are using packetTableCreator to fetch childtables instead of using the parent packet table
@@ -74,8 +81,11 @@ class PacketRepository(Repository):
         try:
             packetTable = self.packetTableCreator.getPacketTable(timestamp)
             selectCursor = self.db.cursor()
-            selectCursor.execute("""select * from """ + packetTable +
-                                 """ where station_id = %s and timestamp = %s order by id limit 1""", (stationId, timestamp, ))
+            selectCursor.execute("""select *
+                                    from """ + packetTable + """ packet
+                                    where packet.station_id = %s and packet.timestamp = %s
+                                    order by """ + self.timeOrderQueryAsc + """
+                                    limit 1""", (stationId, timestamp, ))
             record = selectCursor.fetchone()
 
             selectCursor.close()
@@ -121,7 +131,7 @@ class PacketRepository(Repository):
                             and timestamp <= %s
                         group by station_id
                     )
-                    order by packet.marker_id desc, packet.id desc""", (tuple(mapIdList), tuple(stationIdListToFind), int(minPacketTimestamp), int(maxPacketTimestamp)))
+                    order by packet.marker_id desc, """ + self.timeOrderQueryDesc + """ """, (tuple(mapIdList), tuple(stationIdListToFind), int(minPacketTimestamp), int(maxPacketTimestamp)))
                 # Sort by marker_id first and packet as second, otherwise client might render it wrong
 
                 selectCursor.execute(sql1)
@@ -146,7 +156,7 @@ class PacketRepository(Repository):
                             and station_id in %s
                             and position_timestamp <= %s
                             and timestamp > %s
-                        order by packet.marker_id desc, packet.id desc""", (tuple(stationIdListToFind), int(maxPacketTimestamp), int(minPacketTimestamp)))
+                        order by packet.marker_id desc, """ + self.timeOrderQueryDesc + """ """, (tuple(stationIdListToFind), int(maxPacketTimestamp), int(minPacketTimestamp)))
                     # Sort by marker_id first and packet as second, otherwise client might render it wrong
 
                     selectCursor.execute(sql2)
@@ -189,7 +199,7 @@ class PacketRepository(Repository):
                     and station_id in %s
                     and timestamp > %s
                     and timestamp <= %s
-                order by packet.marker_id, packet.id""", (tuple(stationIdList), int(minPacketTimestamp), int(maxPacketTimestamp)))
+                order by packet.marker_id, """ + self.timeOrderQueryAsc + """ """, (tuple(stationIdList), int(minPacketTimestamp), int(maxPacketTimestamp)))
             # Sort by marker_id first and packet as second, otherwise client might render it wrong
 
             selectCursor.execute(sql1)
@@ -205,7 +215,7 @@ class PacketRepository(Repository):
                     and station_id in %s
                     and position_timestamp <= %s
                     and timestamp > %s
-                order by packet.marker_id, packet.id""", (tuple(stationIdList), int(maxPacketTimestamp), int(maxPacketTimestamp)))
+                order by packet.marker_id, """ + self.timeOrderQueryAsc + """ """, (tuple(stationIdList), int(maxPacketTimestamp), int(maxPacketTimestamp)))
             # Sort by marker_id first and packet as second, otherwise client might render it wrong
 
             selectCursor.execute(sql2)
@@ -246,7 +256,7 @@ class PacketRepository(Repository):
 
             sql = sql + \
                 selectCursor.mogrify(
-                    """ order by packet.marker_id, packet.id""")
+                    """ order by packet.marker_id, """ + self.timeOrderQueryAsc + """ """)
             # Sort by marker_id first and packet as second, otherwise client might render it wrong
             selectCursor.execute(sql)
 
@@ -275,7 +285,7 @@ class PacketRepository(Repository):
         packetTables = self.packetTableCreator.getPacketTables(minTimestamp)
         for packetTable in reversed(packetTables):
             sql = selectCursor.mogrify("""select *
-                from """ + packetTable + """
+                from """ + packetTable + """ packet
                 where station_id = %s
                     and latitude = %s
                     and longitude = %s
@@ -297,7 +307,7 @@ class PacketRepository(Repository):
 
             sql = sql + \
                 selectCursor.mogrify(
-                    """ order by marker_id desc, id desc limit 1""")
+                    """ order by packet.marker_id desc, """ + self.timeOrderQueryDesc + """ limit 1""")
             # Sort by marker_id first and packet as second, otherwise client might render it wrong
 
             selectCursor.execute(sql)
@@ -322,7 +332,7 @@ class PacketRepository(Repository):
         packetTables = self.packetTableCreator.getPacketTables(minTimestamp)
         for packetTable in reversed(packetTables):
             sql = selectCursor.mogrify("""select *
-                from """ + packetTable + """
+                from """ + packetTable + """ packet
                 where station_id = %s
                     and is_moving = 1
                     and map_id = 1""", (stationId,))
@@ -334,7 +344,7 @@ class PacketRepository(Repository):
 
             sql = sql + \
                 selectCursor.mogrify(
-                    """ order by marker_id desc, id desc limit 1""")
+                    """ order by marker_id desc, """ + self.timeOrderQueryDesc + """ limit 1""")
             # Sort by marker_id first and packet as second, otherwise client might render it wrong
 
             selectCursor.execute(sql)
@@ -372,7 +382,7 @@ class PacketRepository(Repository):
 
             sql = sql + \
                 selectCursor.mogrify(
-                    """ order by marker_id desc, id desc limit 1""")
+                    """ order by marker_id desc, """ + self.timeOrderQueryDesc + """ limit 1""")
             # Sort by marker_id first and packet as second, otherwise client might render it wrong
 
             selectCursor.execute(sql)
@@ -596,7 +606,7 @@ class PacketRepository(Repository):
 
                 sql = sql + \
                     selectCursor.mogrify(
-                        """ order by packet.marker_id, packet.id""")
+                        """ order by packet.marker_id, """ + self.timeOrderQueryAsc + """ """)
                 # Sort by marker_id first and packet as second, otherwise client might render it wrong
 
                 selectCursor.execute(sql)

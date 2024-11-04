@@ -1,3 +1,5 @@
+import trackdirect.common.AppSettings as AppSettings
+
 class PacketOrderPolicy():
     """PacketOrderPolicy handles logic related to packet receive order
     """
@@ -21,6 +23,10 @@ class PacketOrderPolicy():
         """
         if (previousPacket is not None
                 and previousPacket.isExistingObject()):
+            allowedOffset = 0
+            if (packet.mapId == 5):
+                allowedOffset = AppSettings.debug_ogn_allowed_out_of_order_interval
+
             if (previousPacket.reportedTimestamp is not None
                     and packet.reportedTimestamp is not None
                     and previousPacket.reportedTimestamp != 0
@@ -29,6 +35,6 @@ class PacketOrderPolicy():
                     and previousPacket.isMoving == 1
                     and previousPacket.reportedTimestamp < (packet.timestamp + 60*60*24)
                     and packet.reportedTimestamp < (packet.timestamp + 60*60*24)
-                    and previousPacket.reportedTimestamp > packet.reportedTimestamp):
+                    and previousPacket.reportedTimestamp > (packet.reportedTimestamp + allowedOffset)):
                 return True
         return False

@@ -1,6 +1,7 @@
 import logging
 from twisted.python import log
 
+import trackdirect.common.AppSettings as AppSettings
 from trackdirect.parser.policies.AprsPacketSymbolPolicy import AprsPacketSymbolPolicy
 from trackdirect.parser.policies.PacketPathTcpPolicy import PacketPathTcpPolicy
 
@@ -78,7 +79,8 @@ class PacketOgnDataPolicy():
         else:
             packetPathTcpPolicy = PacketPathTcpPolicy(self.data['path'])
             if (not packetPathTcpPolicy.isSentByTCP()):
-                self.isAllowedToIdentify = False
+                if self.isAllowedToIdentify:
+                    self.isAllowedToIdentify = AppSettings.debug_ogn_allow_identify_all
 
             if ("comment" in self.data and self.data["comment"] is not None):
                 ognParts = self.data["comment"].split()
@@ -126,8 +128,10 @@ class PacketOgnDataPolicy():
                 self.result['ogn_sender_address'])
             if (ognDevice.isExistingObject() and not ognDevice.tracked):
                 # Pilot do not want to be tracked, so we skip saving the packet
-                self.isAllowedToIdentify = False
-                self.isAllowedToTrack = False
+                if self.isAllowedToIdentify:
+                    self.isAllowedToIdentify = AppSettings.debug_ogn_allow_identify_all
+                if self.isAllowedToTrack:
+                    self.isAllowedToTrack = AppSettings.debug_ogn_allow_track_all
 
             elif (self.result['ogn_sender_address'] == 'ICAFFFFFF'):
                 # The Device ID ICAFFFFFF is used by several aircrafts, we can not know what to do with them...
@@ -136,9 +140,11 @@ class PacketOgnDataPolicy():
 
             elif (not ognDevice.isExistingObject() or not ognDevice.identified):
                 # Pilot has not approved to show identifiable data, so we make up a random station name and clear all identifiable data
-                self.isAllowedToIdentify = False
+                if self.isAllowedToIdentify:
+                    self.isAllowedToIdentify = AppSettings.debug_ogn_allow_identify_all
         else:
-            self.isAllowedToIdentify = False
+            if self.isAllowedToIdentify:
+                self.isAllowedToIdentify = False
 
     def _parseSenderDetails(self, content):
         """Parse OGN aircraft type and OGN address type
@@ -173,8 +179,10 @@ class PacketOgnDataPolicy():
                 stealth = '0'
 
             if (stealth == '1' or noTracking == '1'):
-                self.isAllowedToIdentify = False
-                self.isAllowedToTrack = False
+                if self.isAllowedToIdentify:
+                    self.isAllowedToIdentify = AppSettings.debug_ogn_allow_identify_all
+                if self.isAllowedToTrack:
+                    self.isAllowedToTrack = AppSettings.debug_ogn_allow_track_all
 
     def _parseClimbRate(self, content):
         """Parse OGN climb rate

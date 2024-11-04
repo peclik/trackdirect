@@ -1765,6 +1765,12 @@ function isAllowedToShowOlderData() {
             }
         }
 
+        if (isset($config['websocket_server']['allow_time_travel_ogn'])) {
+            if ($config['websocket_server']['allow_time_travel_ogn'] == '1') {
+                return $isAllowedToShowOlderData;
+            }
+        }
+
         if (isset($config['websocket_server']['aprs_source_id1']) && $config['websocket_server']['aprs_source_id1'] == 5) {
             // Data source is OGN, disable time travel (server will block it anyway)
             $isAllowedToShowOlderData = false;

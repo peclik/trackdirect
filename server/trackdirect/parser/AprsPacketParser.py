@@ -316,13 +316,20 @@ class AprsPacketParser():
                 self.packet.mapId = 15
                 return
 
-            elif (not ognDataPolicy.isAllowedToIdentify):
+            if ('from' in self.data and (self.data['from'].startswith('RND'))):
+                # Some senders that do not want to be tracked send random address and change it every tens seconds
+                # (Yet, they do not have set neither stealth mode not no-tracking flag
+                # For now, treat them as one extra device
+                self.data['from'] = 'RNDFF0000'
+                self.data['ogn_sender_address'] = 'FF0000'
+
+            if (not ognDataPolicy.isAllowedToIdentify):
                 if (not self.saveOgnStationsWithMissingIdentity) :
                     self.packet.mapId = 15
                     return
                 self.isHiddenStation = True
-                self.data["from"] = self._getHiddenStationName()
-                self.data["object_name"] = None
+                self.data['from'] = self._getHiddenStationName()
+                self.data['object_name'] = None
 
             self.data['ogn'] = ognDataPolicy.getOgnData()
             if (self.data['ogn'] is not None):
