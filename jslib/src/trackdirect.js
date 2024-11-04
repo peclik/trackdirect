@@ -26,6 +26,7 @@ var trackdirect = {
 
   _cordinatesContainerElementId: null,
   _statusContainerElementId: "td-status-text",
+  _statsContainerElementId: "td-stats-text",
   _mapElementId: null,
 
   _wsServerUrl: null,
@@ -97,6 +98,8 @@ var trackdirect = {
           parentUrl = "Unknown";
         }
       }
+
+      setInterval(function () {me._updateStats();}, 10*1000);
 
       me._emitEventListeners("trackdirect-init-done");
     });
@@ -1074,6 +1077,23 @@ var trackdirect = {
       alternativeSymbolWithNoDirectionPolyline: [
         40, 42, 64, 74, 84, 85, 96, 98, 101, 102, 112, 116, 119, 121, 123,
       ],
+
+      // deferring callbacks (planned through setTimeout()) takes significant overhead
+      // (there is a big difference when loading/creating tens of thousands markers)
+      // [performance optimalisation]
+      deferred_callbacks: false,
+
+      // removing of old markers can be disabled
+      // it has significant overhead when loading tens of thousand of markers
+      // [performance optimalisation]
+      remove_old_markers: true,
+
+      // type of markers created on the map
+      // 0..L.Marker - html img tags - low performance
+      // 1..L.CircleMarker - just dost, no icons
+      // 2..leaflet.canvas-markers - best performance
+      // [performance optimalisation]
+      marker_type: 2,
     };
   },
 
@@ -1088,6 +1108,9 @@ var trackdirect = {
     }
     if (typeof options["statusContainerElementId"] !== undefined) {
       this._statusContainerElementId = options["statusContainerElementId"];
+    }
+    if (typeof options["statsContainerElementId"] !== undefined) {
+      this._statsContainerElementId = options["statsContainerElementId"];
     }
     if (typeof options["isMobile"] !== undefined) {
       this.isMobile = options["isMobile"];
@@ -1981,9 +2004,6 @@ var trackdirect = {
    * @return null
    */
   _handleAprsPacket: function (packet, animate) {
-    //xxx
-    if (packet.latitude >= 49.183 && packet.latitude <= 49.184 && packet.longitude >= 17.291 && packet.longitude <= 17.292)
-      console.log("hit 1: " + packet.latitude + "  " + packet.raw_path);
     var markerIdKey = this._markerCreator.addPacket(packet, true);
     if (markerIdKey !== null) {
       var highlight = false;
@@ -2474,4 +2494,16 @@ var trackdirect = {
       this._mapCreated = true;
     }
   },
+
+  /**
+   * Show that websocket is IDLE
+   * @return null
+   */
+  _updateStats: function () {
+    if (this._statsContainerElementId !== null) {
+      $("#" + this._statsContainerElementId)
+        .html("" + this._map.markerCollection._getMarkersCount() + "&nbsp;markers")
+    }
+  },
+
 };

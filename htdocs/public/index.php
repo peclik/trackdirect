@@ -36,8 +36,11 @@
             <script src="https://cdnjs.cloudflare.com/ajax/libs/OverlappingMarkerSpiderfier/1.0.3/oms.min.js" integrity="sha512-/3oZy+rGpR6XGen3u37AEGv+inHpohYcJupz421+PcvNWHq2ujx0s1QcVYEiSHVt/SkHPHOlMFn5WDBb/YbE+g==" crossorigin="anonymous"></script>
 
         <?php elseif ($mapapi == 'leaflet' || $mapapi == 'leaflet-vector'): ?>
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.css" integrity="sha512-1xoFisiGdy9nvho8EgXuXvnpR5GAMSjFwp40gSRE3NwdUdIMIKuPa7bqoUhLD0O/5tPNhteAsE5XyyMi5reQVA==" crossorigin="anonymous" />
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.js" integrity="sha512-SeiQaaDh73yrb56sTW/RgVdi/mMqNeM2oBwubFHagc5BkixSpP1fvqF47mKzPGWYSSy4RwbBunrJBQ4Co8fRWA==" crossorigin="anonymous"></script>
+            <link rel="stylesheet" href="/js/leaflet/leaflet.css" />
+            <script type="text/javascript" src="/js/leaflet/leaflet.js"></script>
+
+            <link rel="stylesheet" href="/js/leaflet/Leaflet.PolylineMeasure.css" />
+            <script type="text/javascript" src="/js/leaflet/Leaflet.PolylineMeasure.js"></script>
 
             <?php if ($mapapi == 'leaflet-vector'): ?>
                 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl/1.13.1/mapbox-gl.min.css" />
@@ -49,41 +52,44 @@
             <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js" integrity="sha512-KhIBJeCI4oTEeqOmRi2gDJ7m+JARImhUYgXWiOTIp9qqySpFUAJs09erGKem4E5IPuxxSTjavuurvBitBmwE0w==" crossorigin="anonymous"></script>
         <?php endif; ?>
 
-        <!-- Track Direct jslib -->
-        <script type="text/javascript" src="/js/trackdirect.min.js"></script>
+        <script type="text/javascript" src="/js/rbush.js"></script>
 
-        <!--
-        <script type="text/javascript" src="/js/dbg/other/OverlappingMarkerSpiderfier-Leaflet.js"></script>
-        <script type="text/javascript" src="/js/dbg/trackdirect.js"></script>
-        <script type="text/javascript" src="/js/dbg/trackdirect/Websocket.js"></script>
-        <script type="text/javascript" src="/js/dbg/trackdirect/MarkerCreator.js"></script>
-        <script type="text/javascript" src="/js/dbg/trackdirect/services/dateFormatter.js"></script>
-        <script type="text/javascript" src="/js/dbg/trackdirect/services/callbackExecutor.js"></script>
-        <script type="text/javascript" src="/js/dbg/trackdirect/services/symbolPathFinder.js"></script>
-        <script type="text/javascript" src="/js/dbg/trackdirect/services/mapSectorCalculator.js"></script>
-        <script type="text/javascript" src="/js/dbg/trackdirect/services/distanceCalculator.js"></script>
-        <script type="text/javascript" src="/js/dbg/trackdirect/services/imperialConverter.js"></script>
-        <script type="text/javascript" src="/js/dbg/trackdirect/services/mapAttributionModifier.js"></script>
-        <script type="text/javascript" src="/js/dbg/trackdirect/services/stationColorCalculator.js"></script>
-        <script type="text/javascript" src="/js/dbg/trackdirect/models/Label.js"></script>
-        <script type="text/javascript" src="/js/dbg/trackdirect/models/RngCircle.js"></script>
-        <script type="text/javascript" src="/js/dbg/trackdirect/models/MapState.js"></script>
-        <script type="text/javascript" src="/js/dbg/trackdirect/models/Marker.js"></script>
-        <script type="text/javascript" src="/js/dbg/trackdirect/models/HeatMap.js"></script>
-        <script type="text/javascript" src="/js/dbg/trackdirect/models/TransmitAnimation.js"></script>
-        <script type="text/javascript" src="/js/dbg/trackdirect/models/DirectionPolyline.js"></script>
-        <script type="text/javascript" src="/js/dbg/trackdirect/models/DashedTailPolyline.js"></script>
-        <script type="text/javascript" src="/js/dbg/trackdirect/models/InfoWindow.js"></script>
-        <script type="text/javascript" src="/js/dbg/trackdirect/models/Ruler.js"></script>
-        <script type="text/javascript" src="/js/dbg/trackdirect/models/MarkerCollection.js"></script>
-        <script type="text/javascript" src="/js/dbg/trackdirect/models/TransmitPolyline.js"></script>
-        <script type="text/javascript" src="/js/dbg/trackdirect/models/PhgCircle.js"></script>
-        <script type="text/javascript" src="/js/dbg/trackdirect/models/StationCoveragePolygon.js"></script>
-        <script type="text/javascript" src="/js/dbg/trackdirect/models/Packet.js"></script>
-        <script type="text/javascript" src="/js/dbg/trackdirect/models/TailPolyline.js"></script>
-        <script type="text/javascript" src="/js/dbg/trackdirect/models/Map.js"></script>
-        <script type="text/javascript" src="/js/dbg/other/common.js"></script>
-        -->
+        <!-- Track Direct jslib -->
+        <?php if (1) : ?>
+          <script type="text/javascript" src="/js/trackdirect.min.js"></script>
+        <?php else : ?>
+          <script type="text/javascript" src="/js/dbg/other/leaflet.canvas-markers.js"></script>
+          <script type="text/javascript" src="/js/dbg/other/OverlappingMarkerSpiderfier-Leaflet.js"></script>
+          <script type="text/javascript" src="/js/dbg/trackdirect.js"></script>
+          <script type="text/javascript" src="/js/dbg/trackdirect/Websocket.js"></script>
+          <script type="text/javascript" src="/js/dbg/trackdirect/MarkerCreator.js"></script>
+          <script type="text/javascript" src="/js/dbg/trackdirect/services/dateFormatter.js"></script>
+          <script type="text/javascript" src="/js/dbg/trackdirect/services/callbackExecutor.js"></script>
+          <script type="text/javascript" src="/js/dbg/trackdirect/services/symbolPathFinder.js"></script>
+          <script type="text/javascript" src="/js/dbg/trackdirect/services/mapSectorCalculator.js"></script>
+          <script type="text/javascript" src="/js/dbg/trackdirect/services/distanceCalculator.js"></script>
+          <script type="text/javascript" src="/js/dbg/trackdirect/services/imperialConverter.js"></script>
+          <script type="text/javascript" src="/js/dbg/trackdirect/services/mapAttributionModifier.js"></script>
+          <script type="text/javascript" src="/js/dbg/trackdirect/services/stationColorCalculator.js"></script>
+          <script type="text/javascript" src="/js/dbg/trackdirect/models/Label.js"></script>
+          <script type="text/javascript" src="/js/dbg/trackdirect/models/RngCircle.js"></script>
+          <script type="text/javascript" src="/js/dbg/trackdirect/models/MapState.js"></script>
+          <script type="text/javascript" src="/js/dbg/trackdirect/models/Marker.js"></script>
+          <script type="text/javascript" src="/js/dbg/trackdirect/models/HeatMap.js"></script>
+          <script type="text/javascript" src="/js/dbg/trackdirect/models/TransmitAnimation.js"></script>
+          <script type="text/javascript" src="/js/dbg/trackdirect/models/DirectionPolyline.js"></script>
+          <script type="text/javascript" src="/js/dbg/trackdirect/models/DashedTailPolyline.js"></script>
+          <script type="text/javascript" src="/js/dbg/trackdirect/models/InfoWindow.js"></script>
+          <script type="text/javascript" src="/js/dbg/trackdirect/models/Ruler.js"></script>
+          <script type="text/javascript" src="/js/dbg/trackdirect/models/MarkerCollection.js"></script>
+          <script type="text/javascript" src="/js/dbg/trackdirect/models/TransmitPolyline.js"></script>
+          <script type="text/javascript" src="/js/dbg/trackdirect/models/PhgCircle.js"></script>
+          <script type="text/javascript" src="/js/dbg/trackdirect/models/StationCoveragePolygon.js"></script>
+          <script type="text/javascript" src="/js/dbg/trackdirect/models/Packet.js"></script>
+          <script type="text/javascript" src="/js/dbg/trackdirect/models/TailPolyline.js"></script>
+          <script type="text/javascript" src="/js/dbg/trackdirect/models/Map.js"></script>
+          <script type="text/javascript" src="/js/dbg/other/common.js"></script>
+        <?php endif; ?>
 
         <script type="text/javascript" src="/js/main.js"></script>
         <link rel="stylesheet" href="/css/main.css">
@@ -98,7 +104,7 @@
                 options['useImperialUnit'] = <?php echo (isImperialUnitUser() ? 'true': 'false'); ?>;
                 options['coverageDataUrl'] = '/data/coverage.php';
                 options['coveragePercentile'] = <?php echo (getWebsiteConfig('coverage_percentile') ?? "95"); ?>;
-                options['defaultTimeLength'] = 60; // In minutes
+                options['defaultTimeLength'] = 1; // In minutes
 
                 var md = new MobileDetect(window.navigator.userAgent);
                 if (md.mobile() !== null) {
@@ -120,6 +126,7 @@
 
                 // Tell jslib which html element to use to show connection status and mouse cordinates
                 options['statusContainerElementId'] = 'status-container';
+                options['statsContainerElementId'] = 'stats-container';
                 options['cordinatesContainerElementId'] = 'cordinates-container';
 
                 // Use this setting so enlarge some symbols (for example airplanes when using OGN as data source)
@@ -214,15 +221,17 @@
                     <i class="fa fa-caret-down"></i>
                 </button>
                 <div class="dropdown-content" id="tdTopnavTimelength">
+                    <a href="javascript:void(0);" id="tdTopnavTimelengthDefault" onclick="trackdirect.setTimeLength(1); $('#tdTopnavTimelength>a').removeClass('dropdown-content-checkbox-active'); $(this).addClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox">1 minute</a>
+                    <a href="javascript:void(0);" onclick="trackdirect.setTimeLength(5); $('#tdTopnavTimelength>a').removeClass('dropdown-content-checkbox-active'); $(this).addClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox">5 minutes</a>
                     <a href="javascript:void(0);" onclick="trackdirect.setTimeLength(10); $('#tdTopnavTimelength>a').removeClass('dropdown-content-checkbox-active'); $(this).addClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox">10 minutes</a>
                     <a href="javascript:void(0);" onclick="trackdirect.setTimeLength(30); $('#tdTopnavTimelength>a').removeClass('dropdown-content-checkbox-active'); $(this).addClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox">30 minutes</a>
-                    <a href="javascript:void(0);" id="tdTopnavTimelengthDefault" onclick="trackdirect.setTimeLength(60); $('#tdTopnavTimelength>a').removeClass('dropdown-content-checkbox-active'); $(this).addClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox">1 hour</a>
+                    <a href="javascript:void(0);" onclick="trackdirect.setTimeLength(60); $('#tdTopnavTimelength>a').removeClass('dropdown-content-checkbox-active'); $(this).addClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox">1 hour</a>
                     <a href="javascript:void(0);" onclick="trackdirect.setTimeLength(180); $('#tdTopnavTimelength>a').removeClass('dropdown-content-checkbox-active'); $(this).addClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox">3 hours</a>
                     <a href="javascript:void(0);" onclick="trackdirect.setTimeLength(360); $('#tdTopnavTimelength>a').removeClass('dropdown-content-checkbox-active'); $(this).addClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox">6 hours</a>
                     <a href="javascript:void(0);" onclick="trackdirect.setTimeLength(720); $('#tdTopnavTimelength>a').removeClass('dropdown-content-checkbox-active'); $(this).addClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox">12 hours</a>
                     <a href="javascript:void(0);" onclick="trackdirect.setTimeLength(1080); $('#tdTopnavTimelength>a').removeClass('dropdown-content-checkbox-active'); $(this).addClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox">18 hours</a>
-                    <a href="javascript:void(0);" onclick="trackdirect.setTimeLength(1440); $('#tdTopnavTimelength>a').removeClass('dropdown-content-checkbox-active'); $(this).addClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox dropdown-content-checkbox-only-filtering dropdown-content-checkbox-hidden">24 hours</a>
-                    <a href="javascript:void(0);" onclick="trackdirect.setTimeLength(10080); $('#tdTopnavTimelength>a').removeClass('dropdown-content-checkbox-active'); $(this).addClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox">! 7 days</a>
+                    <a href="javascript:void(0);" onclick="trackdirect.setTimeLength(1440); $('#tdTopnavTimelength>a').removeClass('dropdown-content-checkbox-active'); $(this).addClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox">24 hours</a>
+                    <!--a href="javascript:void(0);" onclick="trackdirect.setTimeLength(10080); $('#tdTopnavTimelength>a').removeClass('dropdown-content-checkbox-active'); $(this).addClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox dropdown-content-checkbox-only-filtering dropdown-content-checkbox-hidden">24 hours</a-->
                 </div>
             </div>
 
@@ -263,11 +272,13 @@
 		<div class="dropdown-content" id="tdTopnavSettings">
                     <a href="javascript:void(0);" onclick="trackdirect.toggleImperialUnits(); $(this).toggleClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox <?php echo (isImperialUnitUser()?'dropdown-content-checkbox-active':''); ?>" title="Switch to imperial units">Use imperial units</a>
                     <a href="javascript:void(0);" onclick="trackdirect.toggleStationaryPositions(); $(this).toggleClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox" title="Hide stations that is not moving">Hide not moving stations</a>
-
-                    <a href="javascript:void(0);" onclick="trackdirect.toggleInternetPositions(); $(this).toggleClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox" title="Hide stations that sends packet using TCP/UDP">Hide Internet stations</a>
+                    <a href="javascript:void(0);" onclick="trackdirect.toggleInternetPositions(); $(this).toggleClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox" title="Hide moving stations that sends packet using TCP/UDP">Hide moving Internet stations</a>
                     <a href="javascript:void(0);" onclick="trackdirect.toggleCwopPositions(); $(this).toggleClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox" title="Hide CWOP weather stations">Hide CWOP stations</a>
                     <a href="javascript:void(0);" onclick="trackdirect.toggleOgflymPositions(); $(this).toggleClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox" title="Hide model airplanes (OGFLYM)">Hide model airplanes (OGFLYM)</a>
                     <a href="javascript:void(0);" onclick="trackdirect.toggleUnknownPositions(); $(this).toggleClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox" title="Hide unknown aircrafts">Hide unknown aircrafts</a>
+                    <hr>
+                    <a href="javascript:void(0);" onclick="trackdirect.settings.animate = !trackdirect.settings.animate; $(this).toggleClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox dropdown-content-checkbox-active" title="Animate signal reception on new markers (disable when there is a lot of airplanes moving)">Animate markers</a>
+                    <a href="javascript:void(0);" onclick="trackdirect.settings.remove_old_markers = !trackdirect.settings.remove_old_markers; $(this).toggleClass('dropdown-content-checkbox-active');" class="dropdown-content-checkbox dropdown-content-checkbox-active" title="Remove markers of age older than configured tail length (disable when there is a lot of markers on tails)">Remove old markers</a>
                 </div>
             </div>
 
@@ -317,6 +328,7 @@
         <div id="right-container">
             <div id="right-container-info">
                 <div id="status-container"></div>
+                <div id="stats-container"></div>
                 <div id="cordinates-container"></div>
             </div>
 

@@ -1,4 +1,4 @@
-/** @preserve OverlappingMarkerSpiderfier
+/** OverlappingMarkerSpiderfier
 https://github.com/jawj/OverlappingMarkerSpiderfier-Leaflet
 Copyright (c) 2011 - 2012 George MacKerron
 Released under the MIT licence: http://opensource.org/licenses/mit-license
@@ -12,9 +12,10 @@ Note: The Leaflet maps API must be included *before* this code
 
   _Class = class {
     // Note: it's OK that this constructor comes after the properties, because of function hoisting
-    constructor(map, opts = {}) {
+    constructor(map, markerGroup, opts = {}) {
       var e, j, k, len, ref, v;
       this.map = map;
+      this.group = markerGroup;
       for (k in opts) {
         if (!hasProp.call(opts, k)) continue;
         v = opts[k];
@@ -22,7 +23,8 @@ Note: The Leaflet maps API must be included *before* this code
       }
       this.initMarkerArrays();
       this.listeners = {};
-      ref = ['click', 'zoomend'];
+      //~ ref = ['click', 'zoomend'];
+      ref = ['zoomend'];
       for (j = 0, len = ref.length; j < len; j++) {
         e = ref[j];
         this.map.addEventListener(e, () => {
@@ -35,7 +37,7 @@ Note: The Leaflet maps API must be included *before* this code
 
   p = _Class.prototype; // this saves a lot of repetition of .prototype that isn't optimized away
 
-  p['VERSION'] = '0.2.6';
+  p['VERSION'] = '0.2.6.1';
 
   twoPi = Math.PI * 2;
 
@@ -78,11 +80,6 @@ Note: The Leaflet maps API must be included *before* this code
     };
     marker.addEventListener('click', markerListener);
     this.markerListeners.push(markerListener);
-
-    //mhl = this.makeStackedHighlightListeners(marker);
-    //marker['_oms'].stackedHighlightListeners = mhl;
-    //marker.addEventListener('mouseover', mhl.highlight);
-    //marker.addEventListener('mouseout', mhl.unhighlight);
 
     this.markers.push(marker);
     return this;
@@ -156,12 +153,6 @@ Note: The Leaflet maps API must be included *before* this code
     if (markerListener != null) {
       marker.removeEventListener('click', markerListener);
     }
-
-    //var mhl = marker['_oms'] == null ? null : marker['_oms'].StackedHighlightListeners;
-    //if (mhl != null) {
-    //  marker.removeEventListener('mouseover', mhl.highlight);
-    //  marker.removeEventListener('mouseout', mhl.unhighlight);
-    //}
   }
 
   p.generatePtsCircle = function(count, centerPt) {
@@ -199,7 +190,7 @@ Note: The Leaflet maps API must be included *before* this code
     var ref = this.markers;
     for (var j = 0, len = ref.length; j < len; j++) {
       var m = ref[j];
-      if (!this.map.hasLayer(m)) {
+      if (!this.group.hasLayer(m)) {
         continue;
       }
       var mPt = this.map.latLngToLayerPoint(m.getLatLng());
@@ -233,27 +224,6 @@ Note: The Leaflet maps API must be included *before* this code
       }
     }
   };
-
-  //p.stackedHighlight = function(marker, highlight) {
-    //console.log(marker);
-    //icon = marker.getIcon();
-    //if (icon !== null) {
-    //  if (highlight) {
-    //  } else {
-    //  }
-    //}
-  //}
-
-  //p.makeStackedHighlightListeners = function(marker) {
-  //  return {
-  //    highlight: () => {
-  //      this.stackedHighlight(marker, true);
-  //    },
-  //    unhighlight: () => {
-  //      this.stackedHighlight(marker, false);
-  //    }
-  //  };
-  //};
 
   p.makeLegHighlightListeners = function(marker) {
     return {
@@ -311,7 +281,8 @@ Note: The Leaflet maps API must be included *before* this code
           marker.addEventListener('mouseout', mhl.unhighlight);
         }
         marker.setLatLng(footLl);
-        marker.setZIndexOffset(1000000);
+        if (marker.setZIndexOffset != null)
+          marker.setZIndexOffset(1000000);
         results.push(marker);
       }
       return results;
@@ -337,7 +308,8 @@ Note: The Leaflet maps API must be included *before* this code
         if (marker !== markerNotToMove) {
           marker.setLatLng(marker['_omsData'].usualPosition);
         }
-        marker.setZIndexOffset(0);
+        if (marker.setZIndexOffset != null)
+          marker.setZIndexOffset(0);
         mhl = marker['_omsData'].legHighlightListeners;
         if (mhl != null) {
           marker.removeEventListener('mouseover', mhl.highlight);
@@ -403,4 +375,3 @@ Note: The Leaflet maps API must be included *before* this code
 
 })());
 }.call(this));
-

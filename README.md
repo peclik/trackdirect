@@ -4,6 +4,24 @@ APRS Track Direct is a collection of tools that can be used to run an APRS websi
 
 Tools included are an APRS data collector, a websocket server, a javascript library (websocket client and more) and a website example (which can of course be used as is).
 
+
+![](htdocs/public/images/demo.png?raw=true)
+
+
+## Changes to [original](https://github.com/qvarforth/trackdirect) APRS Track Direct
+
+Changes primarily to perform transmitter and receiver quality analysis.
+
+* More details in tooltips and info window
+* Command to show all transmit lines for a station/airplane
+* Increased maximum zoom level to 21
+* Added distance measurement tool
+* Performance improvements:
+  * Canvas-drawn markers used instead of HTML elements (handles more than 200,000 dot markers shown)
+  * Option for disabling old markers removal
+  * Option for disabling new marker transmit animation
+
+
 ## What is APRS?
 APRS (Automatic Packet Reporting System) is a digital communications system that uses packet radio to send real time tactical information. The APRS network is used by ham radio operators all over the world.
 
@@ -28,9 +46,12 @@ sudo apt-get install libpq-dev postgresql-12 postgresql-client-common postgresql
 ```
 
 ### Set up aprsc
+
 You should not to connect your collector and websocket server directly to a public APRS server (APRS-IS, CWOP-IS or OGN server). The collector will use a full feed connection and each websocket client will use a filtered feed connection (through the websocket server). To not cause extra load on public servers it is better to run your own aprsc server and let your collector and all websocket connections connect to that instead (will result in only one full feed connection to a public APRS server).
 
-Note that it seems like aprsc needs to run on a server with a public ip, otherwise uplink won't work.
+Note that for detailed analysis, when all received position are to be stored in a database, you may limit the received positions only to a specific area.
+
+aprsc server [fork](https://github.com/peclik/aprsc-filter) allows definition of APRS filters also for uplink connections.
 
 #### Installation
 Follow the instructions found [here](http://he.fi/aprsc/INSTALLING.html).

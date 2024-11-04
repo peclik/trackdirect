@@ -1,7 +1,7 @@
 trackdirect.services.callbackExecutor = {
   /** @type {object} */
   settings: {
-    minTimeBeforeSleep: 30, // in ms
+    minTimeBeforeSleep: 60, // in ms
   },
 
   /** @type {boolean} */
@@ -26,6 +26,10 @@ trackdirect.services.callbackExecutor = {
    * @return {trackdirect.services.callbackExecutor}
    */
   add: function (thisObj, callback, argsArray) {
+    if (!trackdirect.settings.deferred_callbacks) {
+      callback.apply(thisObj, argsArray);
+      return;
+    }
     var callBackString = callback.toString() + ":" + argsArray.toString();
     this._lastAddedUniqueCallback = callBackString;
 
@@ -46,6 +50,10 @@ trackdirect.services.callbackExecutor = {
    * @return {trackdirect.services.callbackExecutor}
    */
   addIfUnique: function (thisObj, callback, argsArray) {
+    if (!trackdirect.settings.deferred_callbacks) {
+      callback.apply(thisObj, argsArray);
+      return;
+    }
     var callBackString = callback.toString() + ":" + argsArray.toString();
     if (this._lastAddedUniqueCallback == callBackString) {
       return this;
@@ -69,6 +77,10 @@ trackdirect.services.callbackExecutor = {
    * @return {trackdirect.services.callbackExecutor}
    */
   addWithPriority: function (thisObj, callback, argsArray) {
+    if (!trackdirect.settings.deferred_callbacks) {
+      callback.apply(thisObj, argsArray);
+      return;
+    }
     this._highPriorityQueue.push(function () {
       callback.apply(thisObj, argsArray);
       trackdirect.services.callbackExecutor._next();
@@ -86,6 +98,10 @@ trackdirect.services.callbackExecutor = {
    * @return {trackdirect.services.callbackExecutor}
    */
   addWithLowPriority: function (thisObj, callback, argsArray) {
+    if (!trackdirect.settings.deferred_callbacks) {
+      callback.apply(thisObj, argsArray);
+      return;
+    }
     this._lowPriorityQueue.push(function () {
       callback.apply(thisObj, argsArray);
       trackdirect.services.callbackExecutor._next();

@@ -24,12 +24,6 @@ trackdirect.MarkerCreator.prototype.addPacket = function (
   }
   var markerIdKey = this._map.markerCollection.getMarkerIdKey(packet.marker_id);
 
-  //xxx
-  if (packet.latitude >= 49.183 && packet.latitude <= 49.184 && packet.longitude >= 17.291 && packet.longitude <= 17.292) {
-    console.log("hit 2: " + packet.latitude + "  " + packet.raw_path);
-    console.log(packet);
-  }
-
   if (this._map.markerCollection.isExistingMarker(markerIdKey)) {
     var marker = this._map.markerCollection.getMarker(markerIdKey);
     if (
@@ -362,7 +356,9 @@ trackdirect.MarkerCreator.prototype._convertToDotMarker = function (
     }
 
     var icon = this._getDotMarkerIcon(packet);
-    dotMarker.setOpacity(1.0);
+    if (trackdirect.settings.marker_type == 0) {
+      dotMarker.setOpacity(1.0); // no effect for leaflet.canvas-markers
+    }
     dotMarker.setIcon(icon);
     if (typeof google === "object" && typeof google.maps === "object") {
       dotMarker.setOptions({ anchorPoint: null });
@@ -586,7 +582,9 @@ trackdirect.MarkerCreator.prototype._convertLostMarkersToGhost = function (
           }
 
           marker.packet.map_id = 9; // Abnormal position (not releted to any previous or any newer positions)
-          marker.setOpacity(0.5);
+          if (trackdirect.settings.marker_type == 0) {
+            dotMarker.setOpacity(0.5); // no effect for leaflet.canvas-markers
+          }
           marker.hasLabel = false;
           marker.hideLabel();
           marker.stopDirectionPolyline();

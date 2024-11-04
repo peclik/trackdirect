@@ -52,7 +52,7 @@ a {
   top: 39px;
   left: 0px;
   width: 100%;
-  height: calc( 100% - 39px ); 
+  height: calc( 100% - 39px );
   z-index:10;
 }
 
@@ -316,7 +316,11 @@ input[type=submit]:hover {
 #status-container {
   white-space:nowrap;
   line-height: 20px;
-  font-size: 11px;
+}
+
+#stats-container {
+  white-space:nowrap;
+  margin-bottom: 4px;
 }
 
 @media screen and (min-width: 800px) {
@@ -341,7 +345,7 @@ input[type=submit]:hover {
   font-family: "Sans-serif", "Helvetica";
 
   margin-bottom: 10px;
-    
+
   background-color: rgba(255, 255, 255, 0.7);
   min-width: 130px;
   border-radius: 10px;

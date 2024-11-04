@@ -991,3 +991,17 @@ trackdirect.models.MarkerCollection.prototype._getCompareablePosition =
     var lngCmp = Math.round(longitude * 100000);
     return String(latCmp) + ":" + String(lngCmp);
   };
+
+/**
+ * Get number of all marker in the collection
+ * @return {number}
+ */
+trackdirect.models.MarkerCollection.prototype._getMarkersCount = function () {
+  var count = 0;
+
+  for (markerIdKey in this._markers) {
+    count += 1 + this.getDotMarkers(markerIdKey).length;
+  }
+
+  return count;
+};

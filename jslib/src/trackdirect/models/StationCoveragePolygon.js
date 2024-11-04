@@ -260,9 +260,9 @@ trackdirect.models.StationCoveragePolygon.prototype._leafletInit = function () {
       ]);
     }
     this._heatmap = L.heatLayer(this._heatmapCoordinates, {
-      minOpacity: 0.35,
-      radius: 6,
-      blur: 4,
+      minOpacity: 0.85,
+      radius: 10,
+      blur: 3,
     });
   }
 };

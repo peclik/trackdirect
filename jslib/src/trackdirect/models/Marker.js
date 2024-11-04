@@ -9,16 +9,25 @@ trackdirect.models.Marker = function (packet, isDotMarker, map) {
   this.packet = packet;
   this._isDotMarker = isDotMarker;
   this._defaultMap = map;
+  this._layerGroup = map.markerLayer;
 
   // Call the parent constructor
   if (typeof google === "object" && typeof google.maps === "object") {
     google.maps.Marker.call(this, this._getGoogleMarkerOptions());
   } else if (typeof L === "object") {
-    L.Marker.call(
-      this,
-      this.packet.getLatLngLiteral(),
-      this._getLeafletMarkerOptions()
-    );
+    if (trackdirect.settings.marker_type != 1) {
+      L.Marker.call(
+        this,
+        this.packet.getLatLngLiteral(),
+        this._getLeafletMarkerOptions()
+      );
+    } else {
+      L.CircleMarker.call(
+        this,
+        this.packet.getLatLngLiteral(),
+        this._getLeafletMarkerOptions()
+      );
+    }
   }
 
   this._init();
@@ -26,14 +35,20 @@ trackdirect.models.Marker = function (packet, isDotMarker, map) {
     this.setMap(null);
   }
 };
+
 if (typeof google === "object" && typeof google.maps === "object") {
   trackdirect.models.Marker.prototype = Object.create(
     google.maps.Marker.prototype
   );
 } else if (typeof L === "object") {
-  trackdirect.models.Marker.prototype = Object.create(L.Marker.prototype);
+  if (trackdirect.settings.marker_type != 1) {
+    trackdirect.models.Marker.prototype = Object.create(L.Marker.prototype);
+  } else {
+    trackdirect.models.Marker.prototype = Object.create(L.CircleMarker.prototype);
+  }
 }
 trackdirect.models.Marker.prototype.constructor = trackdirect.models.Marker;
+
 
 /**
  * Init object
@@ -66,7 +81,9 @@ trackdirect.models.Marker.prototype._init = function () {
       this.packet.map_id != 12
     ) {
       // Ghost marker!
-      this.setOpacity(0.5);
+      if (trackdirect.settings.marker_type == 0) {
+        this.setOpacity(0.5); // no effect for leaflet.canvas-markers
+      }
     } else {
       this.hasLabel = true;
     }
@@ -107,7 +124,7 @@ trackdirect.models.Marker.prototype.isVisible = function () {
       return true;
     }
   } else if (typeof L === "object") {
-    if (this._defaultMap.hasLayer(this)) {
+    if (this._layerGroup.hasLayer(this)) {
       return true;
     }
   }
@@ -146,8 +163,8 @@ trackdirect.models.Marker.prototype.show = function () {
       this.setMap(this._defaultMap);
     }
   } else if (typeof L === "object") {
-    if (!this._defaultMap.hasLayer(this)) {
-      this.addTo(this._defaultMap);
+    if (!this._layerGroup.hasLayer(this)) {
+      this.addTo(this._layerGroup);
     }
   }
 
@@ -195,7 +212,7 @@ trackdirect.models.Marker.prototype.hide = function (
     if (typeof google === "object" && typeof google.maps === "object") {
       this.setMap(null);
     } else if (typeof L === "object") {
-      this._defaultMap.removeLayer(this);
+      this._layerGroup.removeLayer(this);
     }
   }
 
@@ -232,8 +249,8 @@ trackdirect.models.Marker.prototype.getMap = function () {
       return map;
     }
   } else if (typeof L === "object") {
-    if (this._defaultMap.hasLayer(this)) {
-      return this._defaultMap;
+    if (this._layerGroup.hasLayer(this)) {
+      return this._layerGroup;
     }
   }
   return null;
@@ -731,7 +748,8 @@ trackdirect.models.Marker.prototype.shouldMarkerBeVisible = function () {
     }
   }
 
-  if (!this._defaultMap.state.isInternetMarkersVisible) {
+  if (!this._defaultMap.state.isInternetMarkersVisible &&
+      this.isMovingStation()) {
     if (
       this.packet.raw_path.indexOf("TCPIP") >= 0 ||
       this.packet.raw_path.indexOf("qAC") >= 0 ||
@@ -1182,8 +1200,25 @@ trackdirect.models.Marker.prototype._getLeafletMarkerOptions = function () {
     icon: icon,
     opacity: opacity,
     title: tooltipTitle,
+    radius : (trackdirect.settings.marker_type == 1) ? 2 : null,
   };
 };
+
+/**
+ * Set new icon.
+()a suitable leaflet marker options object
+ * @param {object}
+ * @return {object}
+ */
+trackdirect.models.Marker.prototype.setIcon = function (
+  icon
+) {
+  // We override dotMarker.setIcon() since that would create <img> element and
+  // add it to map.markerPane
+  this.options.icon = icon;
+  // inform this._layerGroup
+  return this.fire('icon-set', {icon: icon});
+}
 
 /**
  * Returnes ture for symbols that that look better if they are scaled to twice the size
@@ -1289,12 +1324,12 @@ trackdirect.models.Marker.prototype._toggleNearbyMarkersTransmitLine = function 
   permanent
 ) {
   var nearbyMarkerData, nonNearbyMarkers;
-  if (this._map.oms) {
+  if (this._defaultMap.oms) {
     // oms.findNearbyMarkers returns markers including this
-    [nearbyMarkerData, nonNearbyMarkers] = this._map.oms.findNearbyMarkers(this);
+    [nearbyMarkerData, nonNearbyMarkers] = this._defaultMap.oms.findNearbyMarkers(this);
   } else {
     // show line for this marker at least
-    nearbyMarkerData.marker.this;
+    nearbyMarkerData = [{marker: this}];
   }
 
   for (const d of nearbyMarkerData) {
@@ -1567,6 +1602,10 @@ trackdirect.models.Marker.prototype.getRxSNR = function () {
 (trackdirect.models.Marker.prototype._addMarkerToOldTimeout = function (
   altDelayMilliSeconds
 ) {
+  if (!trackdirect.settings.remove_old_markers) {
+    return;
+  }
+
   var markerCollection = this._defaultMap.markerCollection;
   var state = this._defaultMap.state;
   var delay =
@@ -1588,6 +1627,11 @@ trackdirect.models.Marker.prototype.getRxSNR = function () {
 
   var me = this;
   this.toOldTimerId = window.setTimeout(function () {
+    // User could changed setting while the timer has been set already
+    if (!trackdirect.settings.remove_old_markers) {
+      return;
+    }
+
     if (me._defaultMap.state.isMarkerInfoWindowOpen(me)) {
       // User is looking at this marker, try again later...
       me._addMarkerToOldTimeout(500);

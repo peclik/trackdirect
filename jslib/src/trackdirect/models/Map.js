@@ -6,6 +6,7 @@
  */
 trackdirect.models.Map = function (mapElementId, options) {
   this._init(mapElementId, options);
+  this.markerLayer = null;
 
   // Call the parent constructor
   if (typeof google === "object" && typeof google.maps === "object") {
@@ -21,11 +22,15 @@ trackdirect.models.Map = function (mapElementId, options) {
       this._getLeafletMapOptions()
     );
     this._updateLeafletTileLayer();
-    L.control
-      .zoom({
-        position: "bottomright",
-      })
-      .addTo(this);
+    L.control.scale({position: "bottomleft",}).addTo(this);
+    L.control.polylineMeasure({showBearings: true, showClearControl: true,
+      showUnitControl: true, unitControlUnits: ["kilometres", "nauticalmiles"],}).addTo(this);
+
+    if (trackdirect.settings.marker_type == 2) {
+      this.markerLayer = L.canvasIconLayer({}).addTo(this);
+    } else {
+      this.markerLayer = this;
+    }
   }
 
   this._initMap();
@@ -1362,7 +1367,7 @@ trackdirect.models.Map.prototype._initOms = function () {
     this.oms.legColors.highlighted[mti.TERRAIN] =
       this.oms.legColors.highlighted[mti.ROADMAP] = "#f00";
   } else if (typeof L === "object") {
-    this.oms = new OverlappingMarkerSpiderfier(this, options);
+    this.oms = new OverlappingMarkerSpiderfier(this, this.markerLayer, options);
   }
 };
 
@@ -1415,10 +1420,11 @@ trackdirect.models.Map.prototype._getLeafletMapOptions = function () {
     zoom: zoom,
     zoomControl: true,
     attributionControl: true,
-    zoomControl: false,
+    wheelPxPerZoomLevel: 120,
     minZoom: 3,
     maxZoom: 21,
     closePopupOnClick: false,
+    preferCanvas: true,
   };
 
   return mapOptions;
