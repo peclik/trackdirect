@@ -8,19 +8,25 @@ Tools included are an APRS data collector, a websocket server, a javascript libr
 ![](htdocs/public/images/demo.png?raw=true)
 
 
-## Changes to [original](https://github.com/qvarforth/trackdirect) APRS Track Direct
+## Changes to original APRS Track Direct
 
-Changes primarily to perform transmitter and receiver quality analysis.
+[Original](https://github.com/qvarforth/trackdirect) APRS Track Direct has been tweaked primarily to perform easier transmitter and receiver quality analysis.
 
 * More details in tooltips and info window
 * Command to show all transmit lines for a station/airplane
 * Increased maximum zoom level to 21
+* Decreased minimum zoom level for some marker features
 * Added distance measurement tool
+* Added zoom level info box
+* Added ESRI terrain map
 * Performance improvements:
-  * Canvas-drawn markers used instead of HTML elements (handles more than 200,000 dot markers shown)
+  * Canvas-drawn markers used instead of HTML elements (handles more than 500,000 dot markers shown)
   * Option for disabling old markers removal
   * Option for disabling new marker transmit animation
 
+### TODO
+* Fix: Hide transmit lines shown on mousover after zooming (mousout is not triggered)
+* Improvement: Use more efficient method for removing old markers (setTimer() not effective for a bunch of markers)
 
 ## What is APRS?
 APRS (Automatic Packet Reporting System) is a digital communications system that uses packet radio to send real time tactical information. The APRS network is used by ham radio operators all over the world.

@@ -1418,11 +1418,15 @@ trackdirect.models.Map.prototype._getLeafletMapOptions = function () {
   var zoom = this._getInitialZoom();
   var mapOptions = {
     zoom: zoom,
-    zoomControl: true,
+    zoomControl: false,
+    zoominfoControl: true,
     attributionControl: true,
-    wheelPxPerZoomLevel: 120,
     minZoom: 3,
     maxZoom: 21,
+    zoomSnap: 0.5,
+    zoomDelta: 0.5,
+    wheelPxPerZoomLevel: 120,
+    wheelDebounceTime: 20,
     closePopupOnClick: false,
     preferCanvas: true,
   };

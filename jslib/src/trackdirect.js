@@ -1045,14 +1045,14 @@ var trackdirect = {
       animate: true,
 
       defaultMinZoomForMarkerLabel: 10,
-      defaultMinZoomForMarkerPrevPosition: 10,
+      defaultMinZoomForMarkerPrevPosition: 9,
       defaultMinZoomForMarkerTail: 8,
-      defaultMinZoomForMarkers: 7,
+      defaultMinZoomForMarkers: 8,
 
       minZoomForMarkerLabel: 10,
-      minZoomForMarkerPrevPosition: 10,
+      minZoomForMarkerPrevPosition: 9,
       minZoomForMarkerTail: 8,
-      minZoomForMarkers: 7,
+      minZoomForMarkers: 8,
 
       markerSymbolBaseDir: "/symbols/",
       imagesBaseDir: "/images/",
